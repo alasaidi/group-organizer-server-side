@@ -14,7 +14,8 @@ app.use(
     extended: true,
   })
 );
-
+app.use(cors());
+app.options("*", cors());
 app.get("/", (req, res) => {
   // res.setHeader("Content-Type: application/json");
   // res.setHeader("Access-Control-Allow-Origin: *");
@@ -27,15 +28,12 @@ app.use("/members", membersRouter);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  console.error(
-    err.message ?? "An unexpected error occurred.",
-    err.stack ?? []
-  );
+  console.error(err.message ?? "An unexpected error occurred.", err.stack ?? []);
   res.status(statusCode).json({ message: err.message });
   return;
 });
 
-app.use(cors());
+// app.use(cors());
 
 app.listen(port, () => {
   console.log(`Group Organizer API Listening at http://localhost:${port}`);
