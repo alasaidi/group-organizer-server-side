@@ -28,25 +28,22 @@ router.get("/", (req, res, next) => {
 
 router.get("/:id", (req, res, next) => {
   try {
-    db.get(
-      `SELECT * FROM Groups WHERE GroupId = ${req.params.id}`,
-      (err, row) => {
-        if (err) {
-          res.status(400).json({ error: err.message });
-          return;
-        }
-        if (!row) {
-          res.status(404).json({
-            message: "Group not found",
-          });
-          return;
-        }
-        res.status(200).json({
-          message: "success",
-          data: row,
-        });
+    db.get(`SELECT * FROM Groups WHERE GroupId = ${req.params.id}`, (err, row) => {
+      if (err) {
+        res.status(400).json({ error: err.message });
+        return;
       }
-    );
+      if (!row) {
+        res.status(404).json({
+          message: "Group not found",
+        });
+        return;
+      }
+      res.status(200).json({
+        message: "success",
+        data: row,
+      });
+    });
   } catch (e) {
     console.error("Error while getting group", e.message);
     next(e);
@@ -55,25 +52,22 @@ router.get("/:id", (req, res, next) => {
 
 router.get("/:id/members", (req, res, next) => {
   try {
-    db.all(
-      `SELECT * FROM Members WHERE GroupId = ${req.params.id}`,
-      (err, rows) => {
-        if (err) {
-          res.status(400).json({ error: err.message });
-          return;
-        }
-        if (!rows) {
-          res.status(404).json({
-            message: "Members not found for provided group",
-          });
-          return;
-        }
-        res.status(200).json({
-          message: "success",
-          data: rows,
-        });
+    db.all(`SELECT * FROM Members WHERE GroupId = ${req.params.id}`, (err, rows) => {
+      if (err) {
+        res.status(400).json({ error: err.message });
+        return;
       }
-    );
+      if (!rows) {
+        res.status(404).json({
+          message: "Members not found for provided group",
+        });
+        return;
+      }
+      res.status(200).json({
+        message: "success",
+        data: rows,
+      });
+    });
   } catch (e) {
     console.error("Error while getting group members", e.message);
     next(e);
@@ -81,23 +75,25 @@ router.get("/:id/members", (req, res, next) => {
 });
 
 router.post("/", (req, res, next) => {
-  if (!req.body.title || req.body.title === "") {
+  if (!req.body.Title || req.body.Title === "") {
     res.status(400).json({ error: "New group title must be provided" });
     return;
   }
   const data = {
     GroupId: 0,
-    Title: req.body.title,
-    Description: req.body.description,
-    ImageURL: req.body.imageUrl,
+    Title: req.body.Title,
+    Description: req.body.Description || "",
+    ImageURL: req.body.ImageURL || "",
   };
   const sql = `INSERT INTO Groups 
   (Title, Description, ImageURL) 
-  VALUES ("${data.Title}","${data.Description}","${data.ImageURL}")`;
-  console.log("sql", sql);
+  VALUES (?, ?, ?)`;
+  const params = [data.Title, data.Description, data.ImageURL];
+
   try {
-    db.run(sql, function (err, result) {
+    db.run(sql, params, function (err, result) {
       if (err) {
+        console.error("Database error:", err);
         res.status(400).json({ error: err.message });
         return;
       }
@@ -159,19 +155,16 @@ router.delete("/:id", (req, res, next) => {
     return;
   }
   try {
-    db.run(
-      `DELETE FROM Groups WHERE GroupId = ${req.params.id}`,
-      function (err, result) {
-        if (err) {
-          res.status(400).json({ error: res.message });
-          return;
-        }
-        res.status(200).json({
-          message: "Group deleted",
-          changes: this.changes,
-        });
+    db.run(`DELETE FROM Groups WHERE GroupId = ${req.params.id}`, function (err, result) {
+      if (err) {
+        res.status(400).json({ error: res.message });
+        return;
       }
-    );
+      res.status(200).json({
+        message: "Group deleted",
+        changes: this.changes,
+      });
+    });
   } catch (e) {
     console.error("Error while deleting group", e.message);
     next(e);
