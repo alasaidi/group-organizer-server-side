@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const groupsRouter = require("./routes/groupRoutes");
 const membersRouter = require("./routes/memberRoutes");
-
+app.use(cors());
 app.use(express.json());
 
 app.use(
@@ -14,7 +14,7 @@ app.use(
     extended: true,
   })
 );
-app.use(cors());
+
 app.options("*", cors());
 app.get("/", (req, res) => {
   // res.setHeader("Content-Type: application/json");
